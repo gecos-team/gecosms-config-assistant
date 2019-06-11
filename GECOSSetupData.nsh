@@ -49,12 +49,20 @@ Var OUSelectComboBox
  
 Var NodeNameLabel
 Var NodeNameText 
+
+Var LocalNameCheckbox
+Var LocalDisconnection
  
 Var WorkstationName 
 Var SelectedOU
  
 Var ProgressBar1
 Var ProgressBar2
+
+Var CmdUrl
+Var CmdUsername  
+Var CmdPassword
+var CmdOU
  
 ;--------------------------------
 ;Custom dialogs
@@ -64,10 +72,47 @@ Var ProgressBar2
 ; Functions to process environment variables
 !include ProcessEnvAppendPath.nsh
 
-Function LoadGECOSCCSetupData
+
+
+!macro PrepareGECOSPythonFiles un
 	SetOutPath "$INSTDIR"
+	Push "PATH"
+	Call ${un}GetEnvironmentVariable
 	
-	!insertmacro MUI_HEADER_TEXT $(GECOS_CC_CONNECTION_DATA_HEADER) $(GECOS_CC_CONNECTION_DATA_SUBHEADER)
+    Push "library.zip"
+    Call ${un}StrContains	
+    Pop $0
+    StrCmp $0 "" notfound
+      ; Python files must be ready!
+      Goto done
+	  
+  notfound:
+	; update PATH
+	Push "$PLUGINSDIR\library.zip"
+	Call ${un}ProcessEnvAppendPath
+	
+	; set PYTHONPATH = %PATH%
+	Push "PYTHONPATH"
+	Push "PATH"
+	Call ${un}GetEnvironmentVariable
+	Call ${un}SetEnvironmentVariable
+
+	; set PLUGINSDIR
+	Push "PLUGINSDIR"
+	Push "$PLUGINSDIR"
+	Call ${un}SetEnvironmentVariable
+
+	; set INSTDIR
+	Push "INSTDIR"
+	Push "$INSTDIR"
+	Call ${un}SetEnvironmentVariable
+
+	
+	; set PYLOGFILE
+	Push "PYLOGFILE"
+	Push "$INSTDIR\py${LOG_NAME}"
+	Call ${un}SetEnvironmentVariable	
+
 
 	; Copy python files to PLUGINSDIR
 	File "/oname=$PLUGINSDIR\python27.dll" "python27.dll"
@@ -79,6 +124,9 @@ Function LoadGECOSCCSetupData
 	File "/oname=$PLUGINSDIR\gecoscclink_step01.py" "gecoscclink_step01.py"
 	File "/oname=$PLUGINSDIR\gecoscclink_step02.py" "gecoscclink_step02.py"
 	File "/oname=$PLUGINSDIR\gecoscclink_step03.py" "gecoscclink_step03.py"
+	File "/oname=$PLUGINSDIR\gecoscculink.py" "gecoscculink.py"
+	File "/oname=$PLUGINSDIR\get_connection_data.py" "get_connection_data.py"
+
 
 
 	CreateDirectory "$PLUGINSDIR\templates"
@@ -87,9 +135,19 @@ Function LoadGECOSCCSetupData
 	File "/oname=$PLUGINSDIR\templates\gcc.control" "templates\gcc.control"
 	File "/oname=$PLUGINSDIR\templates\knife.rb" "templates\knife.rb"
 
-	!InsertMacro PreparePythonFiles
+	!insertmacro PreparePythonFiles
 	
+  done:  	
+	; Python files ready
+!macroend
+
+Function LoadGECOSCCSetupData
+	SetOutPath "$INSTDIR"
+	nsislog::log "$INSTDIR\${LOG_NAME}" "LoadGECOSCCSetupData init!"
 	
+	!insertmacro MUI_HEADER_TEXT $(GECOS_CC_CONNECTION_DATA_HEADER) $(GECOS_CC_CONNECTION_DATA_SUBHEADER)
+
+
 	nsDialogs::Create 1018
 	Pop $Dialog
 
@@ -122,7 +180,17 @@ Function LoadGECOSCCSetupData
 	${NSD_CreatePassword} 50u 77u 100u 12u ""
 	Pop $PasswordText	
 
+	${If} $CmdUrl != ""
+		${NSD_SetText} $URLText $CmdUrl
+	${EndIf}
 
+	${If} $CmdUsername != ""
+		${NSD_SetText} $UserText $CmdUsername
+	${EndIf}
+
+	${If} $CmdPassword != ""
+		${NSD_SetText} $PasswordText $CmdPassword
+	${EndIf}
 	
 	nsDialogs::Show
 	
@@ -144,32 +212,6 @@ Function LoadGECOSCCSetupDataLeave
 		Abort
 	${EndIf}
 
-	; update PATH
-	Push "$PLUGINSDIR\library.zip"
-	Call ProcessEnvAppendPath
-	
-	; set PYTHONPATH = %PATH%
-	Push "PYTHONPATH"
-	Push "PATH"
-	Call GetEnvironmentVariable
-	Call SetEnvironmentVariable
-
-	; set PLUGINSDIR
-	Push "PLUGINSDIR"
-	Push "$PLUGINSDIR"
-	Call SetEnvironmentVariable
-
-	; set INSTDIR
-	Push "INSTDIR"
-	Push "$INSTDIR"
-	Call SetEnvironmentVariable
-
-	
-	; set PYLOGFILE
-	Push "PYLOGFILE"
-	Push "$INSTDIR\py${LOG_NAME}"
-	Call SetEnvironmentVariable	
-	
 	nsPython::execFile "$PLUGINSDIR\isurl.py"
 
     Pop $3	
@@ -477,52 +519,6 @@ Function un.UnlinkGECOSCC
 	
 	nsislog::log "$INSTDIR\${LOG_NAME}" "Get data to disconnect from GECOS CC "
 	
-	; Copy python files to PLUGINSDIR
-	File "/oname=$PLUGINSDIR\python27.dll" "python27.dll"
-	File "/oname=$PLUGINSDIR\isurl.py" "isurl.py"
-	File "/oname=$PLUGINSDIR\validate_gecos_credentials.py" "validate_gecos_credentials.py"
-	File "/oname=$PLUGINSDIR\get_autoconf_data.py" "get_autoconf_data.py"
-	File "/oname=$PLUGINSDIR\check_workstation_name.py" "check_workstation_name.py"
-	File "/oname=$PLUGINSDIR\get_ou.py" "get_ou.py"
-	File "/oname=$PLUGINSDIR\gecoscculink.py" "gecoscculink.py"
-	File "/oname=$PLUGINSDIR\get_connection_data.py" "get_connection_data.py"
-
-	CreateDirectory "$PLUGINSDIR\templates"
-	File "/oname=$PLUGINSDIR\templates\chef.control" "templates\chef.control"
-	File "/oname=$PLUGINSDIR\templates\client.rb" "templates\client.rb"
-	File "/oname=$PLUGINSDIR\templates\gcc.control" "templates\gcc.control"
-	File "/oname=$PLUGINSDIR\templates\knife.rb" "templates\knife.rb"
-
-	!InsertMacro PreparePythonFiles
-	
-	
-	
-	; update PATH
-	Push "$PLUGINSDIR\library.zip"
-	Call un.ProcessEnvAppendPath
-
-	; set PYTHONPATH = %PATH%
-	Push "PYTHONPATH"
-	Push "PATH"
-	Call un.GetEnvironmentVariable
-	Call un.SetEnvironmentVariable
-
-	; set PLUGINSDIR
-	Push "PLUGINSDIR"
-	Push "$PLUGINSDIR"
-	Call un.SetEnvironmentVariable
-
-	; set INSTDIR
-	Push "INSTDIR"
-	Push "$INSTDIR"
-	Call un.SetEnvironmentVariable
-
-	
-	; set PYLOGFILE
-	Push "PYLOGFILE"
-	Push "$INSTDIR\py${LOG_NAME}"
-	Call un.SetEnvironmentVariable	
-	
 	nsPython::execFile "$PLUGINSDIR\get_connection_data.py"
 
     Pop $6	
@@ -560,85 +556,104 @@ Function un.UnlinkGECOSCC
 	${NSD_CreateLabel} 0 0 100% 12u $(PLEASE_ENTER_DATA_TO_CONNECT_TO_GECOS)
 	Pop $Label1
 
-	${NSD_CreateLabel} 0 24u 100% 12u $(GECOS_CC_CONNECTION_DATA)
+	${NSD_CreateLabel} 0 18u 100% 12u $(GECOS_CC_CONNECTION_DATA)
 	Pop $Label2
 	
-	${NSD_CreateLabel} 10u 40u 40u 12u $(URL)
+	${NSD_CreateLabel} 10u 35u 40u 12u $(URL)
 	Pop $URLLabel
 
-	${NSD_CreateText} 50u 37u 200u 12u "$GecosCC_URL"
+	${NSD_CreateText} 50u 32u 200u 12u "$GecosCC_URL"
 	Pop $URLText	
 	
 	SendMessage $URLText ${EM_SETREADONLY} 1 0
 
-	${NSD_CreateLabel} 10u 60u 40u 12u $(USER)
+	${NSD_CreateLabel} 10u 55u 40u 12u $(USER)
 	Pop $UserLabel
 
-	${NSD_CreateText} 50u 57u 100u 12u "$GecosCC_User"
+	${NSD_CreateText} 50u 52u 100u 12u "$GecosCC_User"
 	Pop $UserText	
 
 	SendMessage $UserText ${EM_SETREADONLY} 1 0
 	
-	${NSD_CreateLabel} 10u 80u 40u 12u $(PASSWORD)
+	${NSD_CreateLabel} 10u 75u 40u 12u $(PASSWORD)
 	Pop $PasswordLabel
 
-	${NSD_CreatePassword} 50u 77u 100u 12u ""
+	${NSD_CreatePassword} 50u 72u 100u 12u ""
 	Pop $PasswordText	
 
 	
-	${NSD_CreateLabel} 10u 100u 100u 12u $(GECOS_CC_WORKSTATION_NAME)
+	${NSD_CreateLabel} 10u 95u 100u 12u $(GECOS_CC_WORKSTATION_NAME)
 	Pop $WorkstationNameLabel
 
-	${NSD_CreateText} 110u 97u 150u 12u "$WorkstationName"
+	${NSD_CreateText} 110u 92u 150u 12u "$WorkstationName"
 	Pop $WorkstationNameText		
 	
 	SendMessage $WorkstationNameText ${EM_SETREADONLY} 1 0
 	
-	${NSD_CreateLabel} 10u 120u 100u 12u $(GECOS_CC_WORKSTATION_NODE_NAME)
+	${NSD_CreateLabel} 10u 115u 100u 12u $(GECOS_CC_WORKSTATION_NODE_NAME)
 	Pop $NodeNameLabel
 
-	${NSD_CreateText} 110u 117u 150u 12u "$NodeName"
+	${NSD_CreateText} 110u 112u 150u 12u "$NodeName"
 	Pop $NodeNameText		
 	
 	SendMessage $NodeNameText ${EM_SETREADONLY} 1 0
+
+	${NSD_CreateCheckbox} 10u 128u 100u 12u $(GECOS_CC_LOCAL_DISCONNECTION)
+	Pop $LocalNameCheckbox
+	${NSD_OnClick} $LocalNameCheckbox un.DisablePasswordField	
 	
 	nsDialogs::Show
 	
 
 FunctionEnd
-  
+ 
+Function un.DisablePasswordField
+	Pop $LocalNameCheckbox
+	${NSD_GetState} $LocalNameCheckbox $0
+	${If} $0 == 1
+		SendMessage $PasswordText ${EM_SETREADONLY} 1 0
+	${Else}
+		SendMessage $PasswordText ${EM_SETREADONLY} 0 0
+	${EndIf}
+FunctionEnd 
+
 Function un.UnlinkGECOSCCLeave
 	SetOutPath "$INSTDIR"
-	
-	; Check the GECOS CC Password
-	${NSD_GetText} $PasswordText $2
-	
-	${If} $2 == ""
-		MessageBox MB_OK|MB_ICONEXCLAMATION $(EMPTY_PASSWORD)
-		Abort
-	${EndIf}	
-	
-	
-	StrCpy $0 $GecosCC_URL
-	StrCpy $1 $GecosCC_User
-	
-	; Validate credentials trying to connect to GECOS CC
-	nsPython::execFile "$PLUGINSDIR\validate_gecos_credentials.py"
-	
-    Pop $3	
-	${If} $3 == "error"
-		nsislog::log "$INSTDIR\${LOG_NAME}" "UnlinkGECOSCCLeave: ERROR: bad python expression when validating GECOS CC credentials! $4 ($5)"
-		MessageBox MB_OK|MB_ICONSTOP "Error evaluating python expression! $4 ($5)"
-		Abort
+
+	${NSD_GetState} $LocalNameCheckbox $LocalDisconnection
+	${If} $LocalDisconnection == 0	
+		; Check the GECOS CC Password
+		${NSD_GetText} $PasswordText $2
+		
+		
+		${If} $2 == ""
+
+			MessageBox MB_OK|MB_ICONEXCLAMATION $(EMPTY_PASSWORD)
+			Abort
+		${EndIf}	
+		
+		
+		StrCpy $0 $GecosCC_URL
+		StrCpy $1 $GecosCC_User
+		
+		; Validate credentials trying to connect to GECOS CC
+		nsPython::execFile "$PLUGINSDIR\validate_gecos_credentials.py"
+		
+		Pop $3	
+		${If} $3 == "error"
+			nsislog::log "$INSTDIR\${LOG_NAME}" "UnlinkGECOSCCLeave: ERROR: bad python expression when validating GECOS CC credentials! $4 ($5)"
+			MessageBox MB_OK|MB_ICONSTOP "Error evaluating python expression! $4 ($5)"
+			Abort
+		${EndIf}
+		
+		${If} $4 == "false"
+			MessageBox MB_OK|MB_ICONEXCLAMATION $(GECOS_CC_CONNECTION_ERROR_MESSAGE)
+			Abort
+		${EndIf}
+		
+		StrCpy $GecosCC_Pass $2	
+		
 	${EndIf}
-	
-	${If} $4 == "false"
-		MessageBox MB_OK|MB_ICONEXCLAMATION $(GECOS_CC_CONNECTION_ERROR_MESSAGE)
-		Abort
-	${EndIf}
-	
-	StrCpy $GecosCC_Pass $2	
-	
 	
 FunctionEnd  
   
@@ -646,10 +661,22 @@ FunctionEnd
 Function un.UnlinkGECOSCCShow
 	SetOutPath "$INSTDIR"
 	
-	nsislog::log "$INSTDIR\${LOG_NAME}" "GECOS CC connection data validated. Now disconnect from GECOS CC!"
+	${If} $LocalDisconnection == 1
+		; Local disconnection --------------------------------
+		nsislog::log "$INSTDIR\${LOG_NAME}" "Performing local disconnection!"
+		
+		!insertmacro MUI_HEADER_TEXT $(GECOS_CC_UNLINK_HEADER) $(GECOS_CC_UNLINK_LOCAL_SUBHEADER)
+		
+	${Else}
+		; GCC disconnection ----------------------------------
+		nsislog::log "$INSTDIR\${LOG_NAME}" "GECOS CC connection data validated. Now disconnect from GECOS CC!"
+		
+		!insertmacro MUI_HEADER_TEXT $(GECOS_CC_UNLINK_HEADER) $(GECOS_CC_UNLINK_SUBHEADER)
+		
+		
+	${EndIf}		
 	
 	
-	!insertmacro MUI_HEADER_TEXT $(GECOS_CC_UNLINK_HEADER) $(GECOS_CC_UNLINK_SUBHEADER)
 	nsDialogs::Create 1018
 	Pop $Dialog
 
@@ -664,7 +691,17 @@ Function un.UnlinkGECOSCCShow
     ${NSD_CreateProgressBar} 0 24u 100% 10% $(GECOS_CC_UNLINK_DISCONNECTION_PROCESS)
     Pop $ProgressBar1
  
-     ${NSD_CreateTimer} un.UnlinkGECOSCCS_Timer.Callback 1000
+ 	${NSD_GetState} $LocalNameCheckbox $0
+	${If} $LocalDisconnection == 1
+		; Local disconnection --------------------------------
+		${NSD_CreateTimer} un.LocalUnlinkGECOSCCS_Timer.Callback 1000
+		
+ 	${Else}
+		; GCC disconnection ----------------------------------
+		${NSD_CreateTimer} un.UnlinkGECOSCCS_Timer.Callback 1000
+		
+	${EndIf}
+     
 
 	Call un.DisableNextButton
 	Call un.DisableBackButton
@@ -674,6 +711,30 @@ Function un.UnlinkGECOSCCShow
 	
 
 FunctionEnd  
+
+
+Function un.LocalUnlinkGECOSCCS_Timer.Callback
+    ${NSD_KillTimer} un.LocalUnlinkGECOSCCS_Timer.Callback
+
+    ; Delete local connection files
+	nsislog::log "$INSTDIR\${LOG_NAME}"  "Local disconnecton"
+	RMDir /r c:\chef
+	RMDir /r c:\etc
+	
+	
+	${NSD_SetText} $Label1 $(GECOS_CC_UNLINK_DISCONNECTING_SUCCESS)
+	${NSD_SetText} $ProgressBar1 $(GECOS_CC_UNLINK_DISCONNECTING_SUCCESS)
+	
+	SendMessage $ProgressBar1 ${PBM_SETPOS} 100 0
+	
+	${NSD_CreateLabel} 0 60u 100% 12u $(GECOS_CC_UNLINK_UNINSTAL_CHEF)
+	Pop $Label2
+	${NSD_CreateProgressBar} 0 74u 100% 10% $(GECOS_CC_UNLINK_UNINSTAL_CHEF)
+	Pop $ProgressBar2
+	
+	${NSD_CreateTimer} un.UninstallChef_Timer.Callback 1000
+	
+FunctionEnd
 
 
 Function un.UnlinkGECOSCCS_Timer.Callback
@@ -718,24 +779,16 @@ Function un.UninstallChef_Timer.Callback
     ${NSD_KillTimer} un.UninstallChef_Timer.Callback
 	
 	nsislog::log "$INSTDIR\${LOG_NAME}"  "Uninstalling Chef"
-	ExecWait 'msiexec /q /x  "$INSTDIR\chef-client-11.18.12-1.msi"'
+	ExecWait 'msiexec /q /x  "$INSTDIR\chef-client-12.22.5-1-x86.msi"'
 	
 	SendMessage $ProgressBar2 ${PBM_SETPOS} 100 0
 	${NSD_SetText} $Label2 $(GECOS_CC_UNLINK_UNINSTAL_CHEF_SUCCESS)
 
 
 	nsislog::log "$INSTDIR\${LOG_NAME}"  "Cleaning"
-	ExecWait 'del /f /q /s c:\chef'
-	ExecWait 'del /f /q /s c:\etc'
-	ExecWait 'del /f /q /s c:\opscode'
-	
-	ExecWait 'rmdir /q /s c:\chef'
-	ExecWait 'rmdir /q /s c:\etc'
-	ExecWait 'rmdir /q /s c:\opscode'
-	
-	ExecWait 'rmdir /q /s c:\chef'
-	ExecWait 'rmdir /q /s c:\etc'
-	ExecWait 'rmdir /q /s c:\opscode'
+	RMDir /r c:\chef
+	RMDir /r c:\etc
+	RMDir /r c:\opscode
 	
 	
 	Call un.EnableNextButton

@@ -190,6 +190,18 @@ if __name__ == "__main__":
         with open('main.nsi', 'w') as file:
             file.write(content)
 
+
+    # Update 'GECOSSetupData.nsh' file
+    content = False
+    replacement = False
+    with open('GECOSSetupData.nsh', 'r') as file:
+        content = file.read()
+        replacement = re.sub(r"chef-client-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\-x86.msi", CHEF_MSI_FILE, content)
+        
+    if replacement != False and content != replacement:
+        with open('GECOSSetupData.nsh', 'w') as file:
+            file.write(content)
+
     # Delete dependencies in current directory
     todel = []
     for f in glob.glob('*.dll'):

@@ -33,7 +33,7 @@ try:
         gecosAccessData.set_login(nsis.getvar('$1'))
         gecosAccessData.set_password(nsis.getvar('$2'))
         gecoscc = GecosCC()
-        ou_names = gecoscc.search_ou_by_text(gecosAccessData, nsis.getvar('$3'))
+        ou_names = gecoscc.search_ou_by_text(gecosAccessData, nsis.getvar('$3').decode('iso-8859-1').encode('utf-8'))
         if ou_names and (len(ou_names) > 0):
             os.environ["OUNAMES"] = ''
             os.environ["OUIDS"] = ''

@@ -41,7 +41,7 @@ try:
         os.mkdir(os.path.join('C:\\', 'etc'))
     
     workstationData = WorkstationData()
-    workstationData.set_ou(nsis.getvar('$3'))
+    workstationData.set_ou(nsis.getvar('$3').decode('iso-8859-1').encode('utf-8'))
     workstationData.set_name(nsis.getvar('$4'))
     workstationData.set_node_name( binascii.hexlify(base64.b64decode(nsis.getvar('$5'))) )
     workstationDataDao = WorkstationDataDAO()

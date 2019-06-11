@@ -41,6 +41,8 @@
 
 !define GECOS_CC_CONNECTION_ERROR_MESSAGE		"¡No se puede conectar con el Centro de Control GECOS! Por favor revise la URL, el usuario, la contraseña, y su conexión a internet."
 
+!define GECOS_CC_LOCAL_DISCONNECTION			"Desconexión local"
+
 ; LoadGECOSCCSetupDataShow
 !define GECOS_CC_AUTOSETUP_DATA_HEADER			"Autoconfiguración del Centro de Control GECOS"
 !define GECOS_CC_AUTOSETUP_DATA_SUBHEADER		"Por favor, compruebe los datos de autoconfiguración del Centro de Control GECOS."
@@ -72,6 +74,8 @@
 ; un.UnlinkGECOSCCShow
 !define GECOS_CC_UNLINK_HEADER					"Desvincular del Centro de Control GECOS"
 !define GECOS_CC_UNLINK_SUBHEADER				"Por favor espere mientras su PC se desconecta del Centro de Control GECOS."
+!define GECOS_CC_UNLINK_LOCAL_SUBHEADER			"Por favor espere mientras los datos de conexión a GECOS son borrados de su PC."
+
 
 !define GECOS_CC_UNLINK_DISCONNECTING			"Desconectando del Centro de Control GECOS..."
 !define GECOS_CC_UNLINK_DISCONNECTION_PROCESS	"Proceso de desconexión..."

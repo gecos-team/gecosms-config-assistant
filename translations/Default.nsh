@@ -40,6 +40,9 @@
 
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_CONNECTION_ERROR_MESSAGE		"Can't connect to GECOS Control Center! Please double-check the URL, user and password, and your internet connection."
 
+!insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_LOCAL_DISCONNECTION			"Local disconnection"
+
+
 ; LoadGECOSCCSetupDataShow
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_AUTOSETUP_DATA_HEADER			"GECOS Control Center autosetup data"
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_AUTOSETUP_DATA_SUBHEADER		"Please check the autosetup data received from GECOS Control Center."
@@ -71,6 +74,7 @@
 ; un.UnlinkGECOSCCShow
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_UNLINK_HEADER					"Unlink from GECOS Control Center"
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_UNLINK_SUBHEADER				"Please wait while your PC is disconnected from GECOS Control Center."
+!insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_UNLINK_LOCAL_SUBHEADER			"Please wait while GECOS connection data is deleted from your PC."
 
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_UNLINK_DISCONNECTING			"Disconnecting from GECOS Control Center."
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CC_UNLINK_DISCONNECTION_PROCESS	"Disconnection process..."

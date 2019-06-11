@@ -25,4 +25,19 @@ python autogen_python.py
 makensis main.nsi
 ```
 
+## Silent install
+You must use the following parameters to install the software in silent mode:
+* /S (Silent mode flag)
+* /URL="[GECOS Control Center URL]"
+* /USERNAME="[GECOS Control Center Username]"
+* /PASSWORD="[GECOS Control Center Pasword]"
+* /OU="[GECOS Control Center OU name]"
+
+For example:
+```
+gecos.exe /URL="https://gecoscc.mycomplay.com/" /USERNAME="superuser" /PASSWORD="12345" /OU="MyDepartment" /S
+```
+
+
+
 

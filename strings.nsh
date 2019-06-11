@@ -17,7 +17,9 @@ Var STR_CONTAINS_VAR_3
 Var STR_CONTAINS_VAR_4
 Var STR_RETURN_VAR
  
-Function StrContains
+!macro StrContainsDef un
+
+Function ${un}StrContains
   Exch $STR_NEEDLE
   Exch 1
   Exch $STR_HAYSTACK
@@ -40,6 +42,13 @@ Function StrContains
    Pop $STR_NEEDLE ;Prevent "invalid opcode" errors and keep the
    Exch $STR_RETURN_VAR  
 FunctionEnd
+
+!macroend
+ 
+!insertmacro StrContainsDef ""
+!insertmacro StrContainsDef "un."
+ 
+
  
 !macro _StrContainsConstructor OUT NEEDLE HAYSTACK
   Push `${HAYSTACK}`

@@ -37,6 +37,7 @@
 
 !define UNINSTALL_REGKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\gecos"
 
+  !include "FileFunc.nsh"
   !include "WinMessages.nsh"
   !include "MUI.nsh"
 
@@ -156,6 +157,7 @@ Var Text
 ; X64 file system redirection
   !include x64.nsh
   
+  
 ;--------------------------------
 ;Reserve Files
   
@@ -186,19 +188,23 @@ ReserveFile "get_connection_data.py"
   
   !include reserved.nsh
   
-  
-  
 Function .onInit
   ; to install for all user
     SetShellVarContext all
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
 	
-  ${GetParameters} $R0
-  ClearErrors
-  ${GetOptions} $R0 /URL= $0	
-  ${GetOptions} $R0 /USERNAME= $1	
-  ${GetOptions} $R0 /PASSWORD= $1	
+    ${GetParameters} $R0
+    ClearErrors
+    ${GetOptions} $R0 /URL= $CmdUrl	
+    ${GetOptions} $R0 /USERNAME= $CmdUsername	
+    ${GetOptions} $R0 /PASSWORD= $CmdPassword	
+    ${GetOptions} $R0 /OU= $CmdOU	
+	
+	!insertmacro PrepareGECOSPythonFiles ""
+	
+	; Get Windows default workstation name
+	ReadRegStr $WorkstationName HKLM "System\CurrentControlSet\Control\ComputerName\ActiveComputerName" "ComputerName"	
 	
 FunctionEnd
 
@@ -207,6 +213,9 @@ Function un.onInit
     SetShellVarContext all
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
+	
+	!insertmacro PrepareGECOSPythonFiles "un."
+	
 FunctionEnd
 
 
@@ -399,6 +408,33 @@ Section "CreateSetupFiles" CreateSetupFiles_ID
 	nsislog::log "$INSTDIR\${LOG_NAME}" " "
 	nsislog::log "$INSTDIR\${LOG_NAME}" "Software installed. Now connect with GECOS CC... "
 	DetailPrint "Software installed. Now connect with GECOS CC... "
+
+	${If} $NodeName == ""
+		GetFunctionAddress $1 EnabledAdaptersCallback
+		IpConfig::GetEnabledNetworkAdaptersIDsCB $1
+	${EndIf}	
+
+	${If} $GecosCC_URL == ""
+		StrCpy $GecosCC_URL $CmdUrl
+	${EndIf}
+	
+	${If} $GecosCC_User == ""
+		StrCpy $GecosCC_User $CmdUsername
+	${EndIf}
+	
+	${If} $GecosCC_Pass == ""
+		StrCpy $GecosCC_Pass $CmdPassword
+		
+		; Validate credentials trying to connect to GECOS CC
+		StrCpy $0 $GecosCC_URL
+		StrCpy $1 $GecosCC_User
+		StrCpy $2 $GecosCC_Pass
+		nsPython::execFile "$PLUGINSDIR\validate_gecos_credentials.py"
+	${EndIf}
+	
+	${If} $SelectedOU == ""
+		StrCpy $SelectedOU $CmdOU
+	${EndIf}
 	
 	; Create setup files
 	StrCpy $0 $GecosCC_URL
@@ -407,6 +443,13 @@ Section "CreateSetupFiles" CreateSetupFiles_ID
 	StrCpy $3 $SelectedOU		
 	StrCpy $4 $WorkstationName		
 	StrCpy $5 $NodeName		
+
+	nsislog::log "$INSTDIR\${LOG_NAME}" "GECOS CC connection data: "
+	nsislog::log "$INSTDIR\${LOG_NAME}" "  URL: $GecosCC_URL"
+	nsislog::log "$INSTDIR\${LOG_NAME}" "  User: $GecosCC_User"
+	nsislog::log "$INSTDIR\${LOG_NAME}" "  Workstation name: $WorkstationName"
+	nsislog::log "$INSTDIR\${LOG_NAME}" "  Node Name: $NodeName"
+
 	
 	nsPython::execFile "$PLUGINSDIR\gecoscclink_step01.py"
 

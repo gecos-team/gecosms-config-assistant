@@ -68,6 +68,7 @@ try:
     
     workstationDataDao = WorkstationDataDAO()
     workstationData = workstationDataDao.load()
+    workstationData.set_ou(nsis.getvar('$3').decode('iso-8859-1').encode('utf-8'))
 
     conf = json.loads(os.environ["AUTOCFGJSON"])
     
