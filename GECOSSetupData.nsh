@@ -62,7 +62,7 @@ Var ProgressBar2
 Var CmdUrl
 Var CmdUsername  
 Var CmdPassword
-var CmdOU
+Var CmdOU
  
 ;--------------------------------
 ;Custom dialogs
@@ -404,6 +404,11 @@ Function LoadWorkstationData
 
 	${NSD_CreateText} 110u 60u 100u 12u ""
 	Pop $OUSearchText	
+	
+	${If} $CmdOU != ""
+		${NSD_SetText} $OUSearchText $CmdOU
+	${EndIf}	
+
 
 	${NSD_CreateButton} 220u 60u 50u 12u $(GECOS_CC_WORKSTATION_SEARCH_BUTTON)
 	Pop $OUSearchButton
@@ -581,7 +586,6 @@ Function un.UnlinkGECOSCC
 	${NSD_CreatePassword} 50u 72u 100u 12u ""
 	Pop $PasswordText	
 
-	
 	${NSD_CreateLabel} 10u 95u 100u 12u $(GECOS_CC_WORKSTATION_NAME)
 	Pop $WorkstationNameLabel
 

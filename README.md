@@ -35,9 +35,20 @@ You must use the following parameters to install the software in silent mode:
 
 For example:
 ```
-gecos.exe /URL="https://gecoscc.mycomplay.com/" /USERNAME="superuser" /PASSWORD="12345" /OU="MyDepartment" /S
+gecos.exe /PASSWORD="12345" /OU="MyDepartment" /S
 ```
 
+
+## Silent uninstall
+You must use the following parameters to uninstall the software in silent mode:
+* /S (Silent mode flag)
+
+For example:
+```
+c:\Program Files\Junta de Andalucia\GECOS\Uninstall.exe /S
+```
+
+NOTE: Silent uninstall does not perform unlink the node from the GECOS Control Center, it just delete the connection files.
 
 
 

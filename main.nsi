@@ -272,6 +272,21 @@ Section "un.Shortcut Section" SecUnShortcut
 SectionEnd
 
 Section "Uninstall"
+  ; Check if opscode chef was deleted (if it was not deleted this is probably a silent uninstall)
+  !insertmacro IfAppInstalled "Chef Client v12.22.5"
+  Pop $R0
+  
+  ${if} $R0 != 0
+	nsislog::log "$INSTDIR\${LOG_NAME}"  "Uninstall Opscode Chef"
+	ExecWait 'msiexec /q /x  "$INSTDIR\chef-client-12.22.5-1-x86.msi"'
+
+	RMDir /r c:\chef
+	RMDir /r c:\etc
+	RMDir /r c:\opscode  
+
+  ${EndIf} 
+  
+  
   ExecWait '$INSTDIR\tools\gecosws-chef-snitch-client.exe --stop'
   Sleep 1000
   RMDir /r "$INSTDIR\tools"
