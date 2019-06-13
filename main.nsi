@@ -189,10 +189,43 @@ ReserveFile "get_connection_data.py"
   !include reserved.nsh
   
 Function .onInit
-  ; to install for all user
+    ; to install for all user
     SetShellVarContext all
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
+	
+  check_chef_version:	
+    ; Check if any version of opscode chef is installed
+    !insertmacro GetAppInstalledKey "Chef Client "
+    Pop $R4
+  
+    ${if} $R4 != ""
+	    ReadRegStr $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$R4" "DisplayName"	
+        StrCmp $R2 "Chef Client v12.22.5" sameversion 
+	
+		; There is a different version of opscode chef installed --> uninstall it!
+		IfSilent uninst
+  	    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+          $(DIFFERENT_CHEF_VERSION_MESSAGE) \
+          IDOK uninst
+        Abort
+	
+	uninst:
+		ReadRegStr $R3 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$R4" "UninstallString"
+		${StrRep} '$R0' '$R3' '/I' '/X'
+		
+		IfSilent silent_chef_uninst
+		ExecWait '$R0'
+		Goto check_chef_version
+
+    silent_chef_uninst:		
+		ExecWait '$R0 /q'
+		
+		Goto check_chef_version
+		
+	sameversion:
+	
+    ${EndIf} 	
 	
     ${GetParameters} $R0
     ClearErrors

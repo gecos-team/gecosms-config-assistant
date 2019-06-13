@@ -88,3 +88,45 @@
 	pop $R0
 	pop $R1
 !macroend
+
+!macro GetAppInstalledKey AppDisplayName
+	push $R0
+	push $R1
+	push $R2
+	push $R3
+	 
+	!define Index 'Line${__LINE__}'
+	 
+	StrCpy $R1 "0"
+	 
+	"${Index}-Loop:"
+	; Check for Key
+	EnumRegKey $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\" "$R1"
+	StrCmp $R0 "" "${Index}-False"
+	IntOp $R1 $R1 + 1
+	  
+	ReadRegStr $R2 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$R0" "DisplayName"
+	  
+	Push $R2
+    Push "${AppDisplayName}"
+    Call StrContains
+    Pop $R3
+    StrCmp $R3 "" "${Index}-Loop"
+	 
+	;Return the key name if found
+	push $R0
+	goto "${Index}-End"
+	 
+	"${Index}-False:"
+	;Return "" if not found
+	push ""
+	goto "${Index}-End"
+	 
+	"${Index}-End:"
+	!undef Index
+	exch 4
+	pop $R0
+	pop $R1
+	pop $R2
+	pop $R3
+!macroend

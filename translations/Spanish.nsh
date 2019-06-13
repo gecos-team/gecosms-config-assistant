@@ -8,6 +8,9 @@
 ;;  Author: Abraham Macias <amacias@gruposolutia.com>
 ;;
  
+!define DIFFERENT_CHEF_VERSION_MESSAGE				"Existe una versión distinta de Opscode Chef instalada. $\n$\nHaga clic en `Aceptar` para borrar esta versión o `Cancelar` para cancelar esta instalación."
+
+ 
 ; NetworkInterefacesShow
 !define GECOS_CHECK_NETWORK_INTERFACES_HEADER			"Interfaces de red"
 !define GECOS_CHECK_NETWORK_INTERFACES_SUBHEADER		"Compruebe que tiene conexión a internet."

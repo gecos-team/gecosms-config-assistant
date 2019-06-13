@@ -49,6 +49,7 @@
  
   ; String labels should match those from the default language file.
  
+  !insertmacro GECOS_MACRO_LANGSTRING_INSERT  DIFFERENT_CHEF_VERSION_MESSAGE		${CUR_LANG}
   
 	; NetworkInterefacesShow
   !insertmacro GECOS_MACRO_LANGSTRING_INSERT  GECOS_CHECK_NETWORK_INTERFACES_HEADER		${CUR_LANG}

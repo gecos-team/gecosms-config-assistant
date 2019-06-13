@@ -8,6 +8,9 @@
 ;;  Author: Abraham Macias <amacias@gruposolutia.com>
 ;;
  
+!insertmacro GECOS_MACRO_DEFAULT_STRING DIFFERENT_CHEF_VERSION_MESSAGE				"A different version of Opscode Chef is installed. $\n$\nClick `OK` to remove this version or `Cancel` to cancel this installation."
+
+
 ; NetworkInterefacesShow
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CHECK_NETWORK_INTERFACES_HEADER			"Network interfaces"
 !insertmacro GECOS_MACRO_DEFAULT_STRING GECOS_CHECK_NETWORK_INTERFACES_SUBHEADER		"Check internet connection."

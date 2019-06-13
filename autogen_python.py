@@ -188,7 +188,7 @@ if __name__ == "__main__":
         
     if replacement != False and content != replacement:
         with open('main.nsi', 'w') as file:
-            file.write(content)
+            file.write(replacement)
 
 
     # Update 'GECOSSetupData.nsh' file
@@ -200,7 +200,7 @@ if __name__ == "__main__":
         
     if replacement != False and content != replacement:
         with open('GECOSSetupData.nsh', 'w') as file:
-            file.write(content)
+            file.write(replacement)
 
     # Delete dependencies in current directory
     todel = []
