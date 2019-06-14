@@ -35,8 +35,14 @@ You must use the following parameters to install the software in silent mode:
 
 For example:
 ```
-gecos.exe /PASSWORD="12345" /OU="MyDepartment" /S
+gecos.exe  /URL="https://gecoscc.mycomplay.com/" /USERNAME="superuser" /PASSWORD="12345" /OU="MyDepartment" /S
 ```
+
+It a previous version is installed then you probably won't need to link to the GECOS Control Center and you can just update the software by:
+```
+gecos.exe  /S
+```
+
 
 
 ## Silent uninstall

@@ -142,6 +142,10 @@ Var CmdOU
 !macroend
 
 Function LoadGECOSCCSetupData
+    ; Skip this step if C:\chef\client.pem exist
+    IfFileExists C:\chef\client.pem 0 +2
+	Abort
+
 	SetOutPath "$INSTDIR"
 	nsislog::log "$INSTDIR\${LOG_NAME}" "LoadGECOSCCSetupData init!"
 	
@@ -198,6 +202,10 @@ Function LoadGECOSCCSetupData
 FunctionEnd
   
 Function LoadGECOSCCSetupDataLeave
+    ; Skip this step if C:\chef\client.pem exist
+    IfFileExists C:\chef\client.pem 0 +2
+	Abort
+
 	SetOutPath "$INSTDIR"
 	; Check the GECOS CC URL
 	${NSD_GetText} $URLText $0
@@ -266,7 +274,10 @@ FunctionEnd
   
   
 Function LoadGECOSCCSetupDataShow
-
+    ; Skip this step if C:\chef\client.pem exist
+    IfFileExists C:\chef\client.pem 0 +2
+	Abort
+	
 	!insertmacro MUI_HEADER_TEXT $(GECOS_CC_AUTOSETUP_DATA_HEADER) $(GECOS_CC_AUTOSETUP_DATA_SUBHEADER)
 	
 	nsDialogs::Create 1018
@@ -285,7 +296,7 @@ Function LoadGECOSCCSetupDataShow
 	
     Pop $0
 	${If} $0 == "error"
-		nsislog::log "$INSTDIR\${LOG_NAME}" "LoadGECOSCCSetupDataLeave: ERROR: bad python expression when getting JSON data! $1 ($2)"
+		nsislog::log "$INSTDIR\${LOG_NAME}" "LoadGECOSCCSetupDataShow: ERROR: bad python expression when getting JSON data! $1 ($2)"
 		MessageBox MB_OK|MB_ICONSTOP "Error evaluating python expression! $1 ($2)"
 		Abort
 	${EndIf}
@@ -373,6 +384,10 @@ FunctionEnd
   
 ; LoadWorkstationData  
 Function LoadWorkstationData
+    ; Skip this step if C:\chef\client.pem exist
+    IfFileExists C:\chef\client.pem 0 +2
+	Abort
+
 	SetOutPath "$INSTDIR"
 	
 	; Get Windows workstation name

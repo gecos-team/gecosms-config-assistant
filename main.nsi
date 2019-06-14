@@ -79,6 +79,7 @@ Var Dialog
 Var Label
 Var Text
   
+Var skipGecosCCLink
   
 ;--------------------------------
 ;Interface Settings
@@ -451,6 +452,9 @@ SectionEnd
 
 ; Connect with GECOS CC (step 1) =============================================================================================
 Section "CreateSetupFiles" CreateSetupFiles_ID
+    ; Skip this step if C:\chef\client.pem exist
+    IfFileExists C:\chef\client.pem CreateSetupFiles_end
+
 	SectionSetText  ${CreateSetupFiles_ID} "Creating setup files..."
 	SetOutPath "$INSTDIR"
 	nsislog::log "$INSTDIR\${LOG_NAME}" " "
@@ -513,11 +517,16 @@ Section "CreateSetupFiles" CreateSetupFiles_ID
 		Abort
 	${EndIf}	
 	
+  CreateSetupFiles_end:	
+	
 SectionEnd
 
 
 ; Connect with GECOS CC (step 2) =============================================================================================
 Section "LinkToChef" LinkToChef_ID
+    ; Skip this step if C:\chef\client.pem exist
+    IfFileExists C:\chef\client.pem LinkToChef_skip
+	
 	SectionSetText  ${LinkToChef_ID} "Preparing to link to Chef server..."
 	SetOutPath "$INSTDIR"
 	
@@ -553,10 +562,25 @@ Section "LinkToChef" LinkToChef_ID
 		Abort
 	${EndIf}	
 	
+	StrCpy $skipGecosCCLink "false"
+	
+	Goto LinkToChef_end
+
+  LinkToChef_skip:	
+    nsislog::log "$INSTDIR\${LOG_NAME}" "Skip Chef server link!"	
+	StrCpy $skipGecosCCLink "true"
+  
+  LinkToChef_end:
+  
 SectionEnd
 
 ; Connect with GECOS CC (step 3) =============================================================================================
 Section "LinkToCC" LinkToCC_ID
+    ; Skip this step if necessary
+	${If} $skipGecosCCLink == "true"
+		Goto LinkToCC_skip
+	${EndIf}		
+
 	SectionSetText  ${LinkToCC_ID} "Linking to GECOS CC server..."
 	SetOutPath "$INSTDIR"
 	nsislog::log "$INSTDIR\${LOG_NAME}" " "
@@ -588,6 +612,10 @@ Section "LinkToCC" LinkToCC_ID
 
 	nsislog::log "$INSTDIR\${LOG_NAME}" " "
 	nsislog::log "$INSTDIR\${LOG_NAME}" "Successfuly linked to GECOS CC server!"
+	Goto LinkToCC_end
 
-	
+  LinkToCC_skip:
+    nsislog::log "$INSTDIR\${LOG_NAME}" "Skip GECOS CC server link!"
+
+  LinkToCC_end:
 SectionEnd

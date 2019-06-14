@@ -97,6 +97,10 @@ FunctionEnd
 
 
 Function NetworkInterefacesShow
+    ; Skip this step if C:\chef\client.pem exist
+    IfFileExists C:\chef\client.pem 0 +2
+	Abort
+	
 	SetOutPath "$INSTDIR"
 	
 	!insertmacro MUI_HEADER_TEXT $(GECOS_CHECK_NETWORK_INTERFACES_HEADER) $(GECOS_CHECK_NETWORK_INTERFACES_SUBHEADER)
