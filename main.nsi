@@ -320,9 +320,14 @@ Section "Uninstall"
 
   ${EndIf} 
   
-  
-  ExecWait '$INSTDIR\tools\gecosws-chef-snitch-client.exe --stop'
+  ; Stop GECOS notifier
+  ExecWait '$INSTDIR\tools\gecos-snitch-client.exe --exit'
   Sleep 1000
+  
+  ; Ensure GECOS notifier is stopped
+  ExecWait 'taskkill /f /im gecos-notifier.exe'
+  Sleep 1000
+  
   RMDir /r "$INSTDIR\tools"
   RMDir /r "$INSTDIR"
   RMDir /r "$APPDATA\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}"
@@ -348,8 +353,9 @@ Section "Uninstall"
   ${StrRep} $0 "$1" "%SYSTEMROOT%" "$WINDIR" 
   WriteRegStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$0"
   
-  ; Remove scheduled task
+  ; Remove scheduled tasks
   ExecWait 'schtasks /Delete /TN chef-client-wrapper /F'
+  ExecWait 'schtasks /Delete /TN chef-client-wrapper-od /F'
   
   ; Delete %APPDATA%\gecos\firstart\firstart.conf
   ReadEnvStr $0 APPDATA
@@ -382,7 +388,7 @@ Section "ToolsInstalation"
   !insertmacro PrepareToolsFiles 
   
   ; Add registry entry to start the notifier
-  WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "GECOS notifier" "$INSTDIR\tools\notifier.exe"
+  WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "GECOS notifier" "$INSTDIR\tools\gecos-notifier.exe"
 
   ; Add registry entry to start the gecos-user-login script
   WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "GECOS user login" "$INSTDIR\tools\gecos-user-login.exe"
@@ -396,6 +402,13 @@ Section "ToolsInstalation"
   ; Add chef-client-wrapper as a scheduled task
   ; https://technet.microsoft.com/en-us/library/cc748993(v=ws.11).aspx
   ExecWait 'schtasks /Create /TN chef-client-wrapper /TR "\"$INSTDIR\tools\gecos-chef-client-wrapper.exe\"" /sc DAILY /st 07:00 /f /RI 30 /du 24:00  /RL HIGHEST /ru SYSTEM'
+
+  ; Create the event 777 to execute the chef-client-wrapper on demand
+  ExecWait 'schtasks /Delete /TN chef-client-wrapper-od /F'
+  ExecWait 'eventcreate /ID 777 /L APPLICATION /T INFORMATION /SO GecosNotifier /D Initiate'
+
+  ; Add chef-client-wrapper on demand to be executed on 777 event
+  ExecWait 'schtasks /Create /TN chef-client-wrapper-od /TR "\"$INSTDIR\tools\gecos-chef-client-wrapper.exe\"" /RL HIGHEST /ru SYSTEM /SC ONEVENT /EC Application /MO *[System/EventID=777]'
 
   ; Set permissions to the task folder
   ${If} ${RunningX64}
