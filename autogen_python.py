@@ -253,8 +253,8 @@ if __name__ == "__main__":
     shutil.copy(os.path.join('dist', 'library.zip'), 'library.zip')
     
     # Remove the 'build' and 'dist' directory
-    shutil.rmtree('dist')
-    shutil.rmtree('build')
+    shutil.rmtree('dist', ignore_errors=True)
+    shutil.rmtree('build', ignore_errors=True)
     
     
     doReservedFiles()
