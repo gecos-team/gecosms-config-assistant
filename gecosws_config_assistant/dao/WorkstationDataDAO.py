@@ -23,6 +23,7 @@ __license__ = "GPL-2"
 from gecosws_config_assistant.dto.WorkstationData import WorkstationData
 from gecosws_config_assistant.util.JSONUtil import JSONUtil
 from gecosws_config_assistant.util.Template import Template
+from gecosws_config_assistant.util.SSLUtil import SSLUtil
 
 import logging
 import traceback
@@ -159,6 +160,7 @@ class WorkstationDataDAO(object):
             'uri_gcc':  uri_gcc, 
             'gcc_username':  gcc_username, 
             'gcc_nodename':  data.get_node_name(), 
+            'ssl_verify': SSLUtil.isSSLCertificatesVerificationEnabled()
         }        
         
         template.save()        
@@ -207,6 +209,7 @@ class WorkstationDataDAO(object):
             'uri_gcc':  uri_gcc, 
             'gcc_username':  gcc_username, 
             'gcc_nodename':  '', 
+            'ssl_verify': SSLUtil.isSSLCertificatesVerificationEnabled()
         }        
         
         template.save()           

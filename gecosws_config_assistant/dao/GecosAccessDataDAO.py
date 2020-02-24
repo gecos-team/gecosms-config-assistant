@@ -23,6 +23,7 @@ __license__ = "GPL-2"
 from gecosws_config_assistant.dto.GecosAccessData import GecosAccessData
 from gecosws_config_assistant.util.JSONUtil import JSONUtil
 from gecosws_config_assistant.util.Template import Template
+from gecosws_config_assistant.util.SSLUtil import SSLUtil
 
 import logging
 import traceback
@@ -151,7 +152,8 @@ class GecosAccessDataDAO(object):
         template.variables = { 
             'uri_gcc':  data.get_url(), 
             'gcc_username':  data.get_login(), 
-            'gcc_nodename':  gcc_nodename, 
+            'gcc_nodename':  gcc_nodename,
+            'ssl_verify': SSLUtil.isSSLCertificatesVerificationEnabled()
         }        
         
         return template.save()

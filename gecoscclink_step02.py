@@ -95,7 +95,7 @@ try:
     from gecosws_config_assistant.firstboot_lib.firstbootconfig import get_data_file
 
      # List of GEMS required to run GECOS
-    necessary_gems = ['json', 'rest-client', 'activesupport', 'netaddr']
+    necessary_gems = ['json', 'rest-client', 'activesupport:4.2.11.1', 'netaddr']
     nsis.setvar('6', "false")
     gecosAccessData = GecosAccessData()
     gecosAccessData.set_url(nsis.getvar('$0'))
